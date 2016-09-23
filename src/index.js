@@ -98,7 +98,7 @@ class AdvancedParser extends Parser {
                             region.replacement,
                             step.slice(region.end + shift)
                         ].join('');
-                        return region.replacement.length - region.origin.length;
+                        return shift + region.replacement.length - region.origin.length;
                     }, 0);
 
                     return false; // end iteration

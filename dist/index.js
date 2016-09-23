@@ -166,7 +166,7 @@ var AdvancedParser = function (_Parser) {
 
                         _.reduce(replaceRegions, function (shift, region) {
                             step = [step.slice(0, region.start + shift), region.replacement, step.slice(region.end + shift)].join('');
-                            return region.replacement.length - region.origin.length;
+                            return shift + region.replacement.length - region.origin.length;
                         }, 0);
 
                         return false; // end iteration
