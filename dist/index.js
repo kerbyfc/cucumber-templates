@@ -362,18 +362,22 @@ var Runtime = function () {
 
 var runtime = new Runtime();
 
-function extractPatterns(filesPattern) {
-    var pattern = /\/\^([^\$]+)\$\//g;
+function extractPatterns(filesPattern, extractor) {
+    var files = filesPattern.match(/\*/) ? filesPattern : filesPattern.replace(/\/$/, '') + '/**/*.js';
 
-    return _(glob.sync(filesPattern.replace(/\/$/, '') + '/**/*.js')).map(function (file) {
-        return fs.readFileSync(file).toString().match(pattern);
+    return _(glob.sync(files)).map(function (file) {
+        return extractor(fs.readFileSync(file).toString());
     }).flatten().compact().map(function (pattern) {
         return new RegExp(pattern.slice(1, -1).replace(/\\/g, '\\'));
     }).value();
 }
 
+function patternsExtractor(content) {
+    return content.match(/\/\^([^\$]+)\$\//g);
+}
+
 module.exports = function run(options) {
-    stepPattens = extractPatterns(options.definitions);
+    stepPattens = extractPatterns(options.patternFiles || options.definitions, options.extractor || patternsExtractor);
 
     var runtime = new Runtime(options);
 

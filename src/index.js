@@ -263,12 +263,12 @@ class Runtime {
 
 const runtime = new Runtime();
 
-function extractPatterns(filesPattern) {
-    const pattern = /\/\^([^\$]+)\$\//g;
+function extractPatterns(filesPattern, extractor) {
+    const files = filesPattern.match(/\*/) ? filesPattern : filesPattern.replace(/\/$/, '') + '/**/*.js';
 
-    return _(glob.sync(filesPattern.replace(/\/$/, '') + '/**/*.js'))
+    return _(glob.sync(files))
         .map((file) => {
-            return fs.readFileSync(file).toString().match(pattern);
+            return extractor(fs.readFileSync(file).toString());
         }).flatten().compact()
         .map((pattern) => {
             return new RegExp(pattern.slice(1, -1).replace(/\\/g, '\\'));
@@ -276,8 +276,12 @@ function extractPatterns(filesPattern) {
         .value();
 }
 
+function patternsExtractor(content) {
+    return content.match(/\/\^([^\$]+)\$\//g);
+}
+
 module.exports = function run(options) {
-    stepPattens = extractPatterns(options.definitions);
+    stepPattens = extractPatterns(options.patternFiles || options.definitions, options.extractor || patternsExtractor);
 
     const runtime = new Runtime(options);
 
